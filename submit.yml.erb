@@ -1,0 +1,16 @@
+<%-
+ppn = num_cores.blank? ? 32 : num_cores.to_i
+bc_num_tasks = num_cores.blank? ? 1 : num_cores.to_i
+if node_type == ':hugemem'
+  ppn = 48
+end
+%>
+---
+batch_connect:
+  template: vnc
+script:
+  native:
+    - "-N"
+    - "<%= bc_num_slots.blank? ? 1 : bc_num_slots.to_i %>"
+    - "-n"
+    - "<%= ppn.to_i %>"

@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+<%- gpu = context.node_type.include?("gpu") -%>
+<%- x11 = context.bc_x11.to_i == 1 -%>
+
+# Clean the environment
+module purge
+
+# Set working directory to home directory
+cd "${HOME}"
+
+#
+# Launch Xfce Window Manager and Panel
+#
+
+(
+  export SEND_256_COLORS_TO_REMOTE=1
+  export XDG_CONFIG_HOME="<%= session.staged_root.join("config") %>"
+  export XDG_DATA_HOME="<%= session.staged_root.join("share") %>"
+  export XDG_CACHE_HOME="$(mktemp -d)"
+  module restore
+  module load fluxbox
+  set -x
+  fluxbox -display "${DISPLAY}.0"
+  xsetroot -solid "#D3D3D3"
+) &
+
+#
+# Start MATLAB
+#
+
+# Load the required environment
+module load <%= context.version %>
+
+# Launch MATLAB
+<%- if gpu and x11 -%>
+module load VirtualGL
+module list
+set -x
+#export DISPLAY=${DISPLAY}.0
+#matlab -desktop
+vglrun matlab -desktop -nosoftwareopengl
+<%- else -%>
+module list
+set -x
+export DISPLAY=${DISPLAY}.0
+matlab -desktop
+<%- end -%>
